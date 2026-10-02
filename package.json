@@ -1,0 +1,48 @@
+{
+  "name": "gh-triage",
+  "version": "0.1.0",
+  "description": "AI-powered GitHub issue triage CLI — auto-labels, prioritizes and summarizes issues via any OpenAI-compatible LLM.",
+  "keywords": [
+    "github",
+    "issues",
+    "triage",
+    "ai",
+    "llm",
+    "cli",
+    "labels",
+    "automation"
+  ],
+  "homepage": "https://github.com/Aastik780/gh-triage#readme",
+  "bugs": {
+    "url": "https://github.com/Aastik780/gh-triage/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aastik780/gh-triage.git"
+  },
+  "license": "MIT",
+  "author": "Aastik Gupta",
+  "type": "module",
+  "bin": {
+    "gh-triage": "dist/cli.js"
+  },
+  "main": "dist/cli.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0"
+  }
+}

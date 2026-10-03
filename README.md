@@ -54,9 +54,10 @@ export LLM_API_KEY=sk-xxx          # any OpenAI-compatible key
 # optional:
 export LLM_BASE_URL=http://127.0.0.1:31415/v1   # point at any OpenAI-compatible router
 export LLM_MODEL=gpt-4o-mini
+export LLM_FORMAT=anthropic                      # openai | anthropic | auto
 ```
 
-Works with OpenAI, OpenRouter, Ollama, LM Studio, vLLM, or any endpoint that speaks `POST /chat/completions`.
+Works with OpenAI, OpenRouter, Ollama, LM Studio, vLLM, or any endpoint that speaks `POST /chat/completions`. Anthropic-style endpoints (`POST /v1/messages`) are supported via `--llm-format anthropic` — or `auto` to fall back when the OpenAI dialect404s.
 
 ## Usage
 
@@ -67,6 +68,7 @@ gh-triage owner/repo --limit 25         # more issues per run
 gh-triage owner/repo --comment          # also post the summary as a comment
 gh-triage owner/repo --state all        # open | closed | all
 gh-triage owner/repo --model gpt-4o     # override model
+gh-triage owner/repo --llm-format auto  # openai | anthropic | auto
 ```
 
 No `owner/repo` argument? It falls back to `$GITHUB_REPOSITORY` — perfect inside GitHub Actions.

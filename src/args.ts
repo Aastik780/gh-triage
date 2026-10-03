@@ -1,3 +1,5 @@
+export type LlmFormat = 'openai' | 'anthropic' | 'auto';
+
 export interface Args {
   repo: string | null;
   limit: number;
@@ -6,6 +8,7 @@ export interface Args {
   comment: boolean;
   model: string | null;
   baseUrl: string | null;
+  llmFormat: LlmFormat | null;
   help: boolean;
   version: boolean;
 }
@@ -22,6 +25,7 @@ Options:
   --comment         Also post the AI summary as an issue comment
   --model <name>    LLM model id (default: $LLM_MODEL or gpt-4o-mini)
   --base-url <url>  OpenAI-compatible API base URL (default: $LLM_BASE_URL or https://api.openai.com/v1)
+  --llm-format <f>  LLM dialect: openai | anthropic | auto (default: $LLM_FORMAT or openai)
   -h, --help        Show this help
   -v, --version     Show version
 
@@ -31,6 +35,7 @@ Environment:
   LLM_API_KEY       Required. API key for the LLM endpoint.
   LLM_BASE_URL      Optional. Defaults to https://api.openai.com/v1
   LLM_MODEL         Optional. Defaults to gpt-4o-mini
+  LLM_FORMAT        Optional. openai | anthropic | auto (anthropic posts to {base}/messages)
 
 Examples:
   gh-triage Aastik780/Discord-music-bot --dry-run
@@ -46,6 +51,7 @@ export function parseArgs(argv: string[]): Args {
     comment: false,
     model: null,
     baseUrl: null,
+    llmFormat: null,
     help: false,
     version: false,
   };
@@ -82,6 +88,12 @@ export function parseArgs(argv: string[]): Args {
       const v = argv[++i];
       if (!v) throw new Error('--base-url expects a value');
       args.baseUrl = v;
+    } else if (a === '--llm-format') {
+      const v = argv[++i];
+      if (v !== 'openai' && v !== 'anthropic' && v !== 'auto') {
+        throw new Error('--llm-format expects one of: openai, anthropic, auto');
+      }
+      args.llmFormat = v;
     } else if (a.startsWith('-')) {
       throw new Error(`unknown option: ${a}`);
     } else if (!args.repo) {

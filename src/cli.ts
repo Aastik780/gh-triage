@@ -38,9 +38,11 @@ async function main(): Promise<void> {
 
   const cfg = loadConfig(args);
   const gh = new GitHubClient(cfg.token);
-  const llm = { baseUrl: cfg.llmBaseUrl, apiKey: cfg.llmApiKey, model: cfg.model };
+  const llm = { baseUrl: cfg.llmBaseUrl, apiKey: cfg.llmApiKey, model: cfg.model, format: cfg.llmFormat };
 
-  console.log(`gh-triage ${version()} → ${cfg.repo} (state=${cfg.state}, limit=${cfg.limit}, model=${cfg.model})${cfg.dryRun ? ', dry-run' : ''}`);
+  console.log(
+    `gh-triage ${version()} → ${cfg.repo} (state=${cfg.state}, limit=${cfg.limit}, model=${cfg.model}, llm=${cfg.llmFormat})${cfg.dryRun ? ', dry-run' : ''}`,
+  );
 
   const issues = await gh.listIssues(cfg.repo, cfg.state, cfg.limit);
   if (issues.length === 0) {

@@ -1,7 +1,10 @@
+import type { LlmFormat } from './args.js';
+
 export interface LlmConfig {
   baseUrl: string;
   apiKey: string;
   model: string;
+  format?: LlmFormat;
 }
 
 function extractJson(text: string): string {
@@ -13,7 +16,7 @@ function extractJson(text: string): string {
   return text.trim();
 }
 
-async function chatOnce(cfg: LlmConfig, system: string, user: string, useResponseFormat: boolean): Promise<string> {
+async function chatOpenAI(cfg: LlmConfig, system: string, user: string, useResponseFormat: boolean): Promise<string> {
   const body: Record<string, unknown> = {
     model: cfg.model,
     temperature: 0,
@@ -46,6 +49,60 @@ async function chatOnce(cfg: LlmConfig, system: string, user: string, useRespons
     throw new Error('LLM returned an empty response');
   }
   return content;
+}
+
+async function chatAnthropic(cfg: LlmConfig, system: string, user: string): Promise<string> {
+  const res = await fetch(`${cfg.baseUrl}/messages`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': cfg.apiKey,
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      max_tokens: 1024,
+      temperature: 0,
+      system,
+      messages: [{ role: 'user', content: user }],
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    const err = new Error(`LLM HTTP ${res.status}: ${text.slice(0, 300)}`);
+    (err as any).status = res.status;
+    throw err;
+  }
+
+  const data = (await res.json()) as any;
+  const content = Array.isArray(data?.content)
+    ? data.content
+        .map((block: any) => (block?.type === 'text' && typeof block.text === 'string' ? block.text : ''))
+        .join('')
+    : '';
+  if (!content.trim()) {
+    throw new Error('LLM returned an empty response');
+  }
+  return content;
+}
+
+async function chatOnce(cfg: LlmConfig, system: string, user: string, useResponseFormat: boolean): Promise<string> {
+  const format = cfg.format ?? 'openai';
+
+  if (format === 'anthropic') return chatAnthropic(cfg, system, user);
+
+  if (format === 'auto') {
+    try {
+      return await chatOpenAI(cfg, system, user, useResponseFormat);
+    } catch (err: any) {
+      // No OpenAI dialect here — fall back to the Anthropic messages endpoint.
+      if (err?.status === 404) return chatAnthropic(cfg, system, user);
+      throw err;
+    }
+  }
+
+  return chatOpenAI(cfg, system, user, useResponseFormat);
 }
 
 export async function chatJSON(cfg: LlmConfig, system: string, user: string): Promise<unknown> {

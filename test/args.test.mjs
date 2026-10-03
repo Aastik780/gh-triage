@@ -10,6 +10,7 @@ test('defaults', () => {
   assert.equal(a.state, 'open');
   assert.equal(a.dryRun, false);
   assert.equal(a.comment, false);
+  assert.equal(a.llmFormat, null);
 });
 
 test('positional repo + flags', () => {
@@ -32,4 +33,10 @@ test('rejects bad limit', () => {
 
 test('rejects unknown flag', () => {
   assert.throws(() => parseArgs(['--nope']), /unknown option/);
+});
+
+test('llm-format flag', () => {
+  assert.equal(parseArgs(['--llm-format', 'anthropic']).llmFormat, 'anthropic');
+  assert.equal(parseArgs(['--llm-format', 'auto']).llmFormat, 'auto');
+  assert.throws(() => parseArgs(['--llm-format', 'wat']), /llm-format expects one of/);
 });
